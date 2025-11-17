@@ -10,20 +10,20 @@
 
 class string_to_figure {
 public:
-    figure* create_from(std::string representation) {
+    std::unique_ptr<figure> create_from(std::string representation) {
         std::istringstream iss(representation);
         std::string type;
         double a, b, c;
         iss >> type;
         if (type == "Circle") {
             iss >> a;
-            return new circle(a);
+            return std::make_unique<circle>(a);
         } else if (type == "Rectangle") {
             iss >> a >> b;
-            return new rectangle(a, b);
+            return std::make_unique<rectangle>(a, b);
         } else if (type == "Triangle") {
             iss >> a >> b >> c;
-            return new triangle(a, b, c);
+            return std::make_unique<triangle>(a, b, c);
         }
         return nullptr;
     };

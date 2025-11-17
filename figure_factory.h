@@ -10,13 +10,13 @@
 
 class figure_factory {
 public:
-    virtual figure* create() = 0;
+    virtual std::unique_ptr<figure> create() = 0;
     virtual ~figure_factory() = default;
 };
 
 class RandomFigureFactory : public figure_factory {
 public:
-    figure* create() override {
+    std::unique_ptr<figure> create() override {
         std::srand(std::time(0));
         int rand = std::rand();
         if (rand % 2 == 0) {
@@ -25,14 +25,14 @@ public:
             int c_min = std::abs(a - b) + 1;
             int c_max = a + b - 1;
             int c = rand % (c_max - c_min + 1) + c_min;
-            return new triangle(a, b, c);
+            return std::make_unique<triangle>(a, b, c);
         }else if (rand % 3 == 0) {
             int r = rand % 100 + 1;
-            return new circle(r);
+            return std::make_unique<circle>(r);
         }else {
             int a = rand % 100 + 1;
             int b = rand % 1000 + 1;
-            return new rectangle(a, b);
+            return std::make_unique<rectangle>(a, b);
         }
         return nullptr;
     }
@@ -41,16 +41,14 @@ public:
 class StreamFigureFactory : public figure_factory {
 private:
     std::istream& input;
+    string_to_figure converter;
 public:
     StreamFigureFactory(std::istream& input) : input(input) {}
 
-    figure* create() override {
-        string_to_figure converter;
+    std::unique_ptr<figure> create() override {
         std::string representation;
-        std::getline(input, representation);
-        figure* figure = converter.create_from(representation);
-        if (figure) {
-            return figure;
+        if (std::getline(input, representation)) {
+            return converter.create_from(representation);
         }
         return nullptr;
     }
