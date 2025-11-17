@@ -31,7 +31,7 @@ public:
         if (radius <= 0) {
             throw std::invalid_argument("Perimeter must be positive");
         }
-        if (!std::isinf(2*radius*M_PI)) {
+        if (std::isinf(2*radius*M_PI)) {
             throw std::invalid_argument("Radius is too big, integer overflow possible");
         }
         this-> radius = radius;
@@ -59,7 +59,7 @@ public:
         if (a <= 0 || b <= 0) {
             throw std::invalid_argument("Sides must be positive");
         }
-        if (!(std::isinf(2*(a+b)))) {
+        if ((std::isinf(2*(a+b)))) {
             throw std::invalid_argument("Side are too big, integer overflow possible");
         }
         this-> a = a;
@@ -93,7 +93,7 @@ public:
         if (a + b <= c || a + c <= b || b + c <= a) {
             throw std::invalid_argument("Invalid triangle sides");
         }
-        if (!std::isinf(a + b + c)) {
+        if (std::isinf(a + b + c)) {
             throw std::invalid_argument("Sides are too big, integer overflow possible");
         }
         this-> a = a;
