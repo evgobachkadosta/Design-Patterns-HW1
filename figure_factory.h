@@ -17,7 +17,6 @@ public:
 class RandomFigureFactory : public figure_factory {
 public:
     std::unique_ptr<figure> create() override {
-        std::srand(std::time(0));
         int rand = std::rand();
         if (rand % 2 == 0) {
             int a = rand % 100 + 1;
@@ -44,6 +43,7 @@ private:
     string_to_figure converter;
 public:
     StreamFigureFactory(std::istream& input) : input(input) {}
+    StreamFigureFactory(std::unique_ptr<std::istream> is) : input(*is) {}
 
     std::unique_ptr<figure> create() override {
         std::string representation;

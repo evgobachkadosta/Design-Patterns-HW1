@@ -11,9 +11,6 @@
 
 
 class AbstractFactory {
-private:
-    std::unique_ptr<std::ifstream> file_stream;
-
 public:
 
     std::unique_ptr<figure_factory> create_factory(const std::string& input_type) {
@@ -28,17 +25,11 @@ public:
 
         else if (input_type == "File") {
             std::string filename;
-            std::cout << "Please enter the filename: ";
+            std::cout << "Please enter the filename: " << std::endl;
 
             std::cin >> filename;
 
-            file_stream = std::make_unique<std::ifstream>(filename);
-
-            if (!file_stream->is_open()) {
-                throw std::runtime_error("Could not open file: " + filename);
-            }
-
-            return std::make_unique<StreamFigureFactory>(*file_stream);
+            return std::make_unique<StreamFigureFactory>(std::make_unique<std::ifstream>(filename));
         }
 
         else {
