@@ -3,7 +3,6 @@
 #include <sstream>
 #include <iostream>
 
-// Include your project headers
 #include "Figures.h"
 #include "string_to_figure.h"
 #include "figure_factory.h"
@@ -15,10 +14,12 @@ TEST_CASE("Circle Logic") {
         REQUIRE_THAT(c.perimeter(), Catch::Matchers::WithinRel(62.83185, 0.0001));
         REQUIRE(c.to_string().find("Circle") != std::string::npos);
     }
-
+    SECTION("Overflow") {
+        REQUIRE_THROWS_AS(circle(std::numeric_limits<double>::infinity()), std::invalid_argument);
+    }
     SECTION("Negative radius") {
         REQUIRE_THROWS_AS(circle(-1.0), std::invalid_argument);
-        REQUIRE_THROWS_AS(circle(0.0), std::invalid_argument); // Assuming 0 is invalid
+        REQUIRE_THROWS_AS(circle(0.0), std::invalid_argument);
     }
 }
 
@@ -79,6 +80,11 @@ TEST_CASE("String Parsing Logic") {
 
     SECTION("Invalid Params") {
         REQUIRE_THROWS_AS(parser.create_from("Circle -5"), std::invalid_argument);
+    }
+
+    SECTION("Extra Junk") {
+        auto fig = parser.create_from("Circle 5 klfnaewlf KFnqefl");
+        REQUIRE(fig == nullptr);
     }
 }
 
