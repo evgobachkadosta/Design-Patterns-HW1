@@ -1,63 +1,115 @@
-//
-// Created by user on 20.11.2025 г..
-//
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <sstream>
+#include <iostream>
+
+// Include your project headers
 #include "Figures.h"
 #include "string_to_figure.h"
+#include "figure_factory.h"
 
-// Test 1: Logic Validation (The Rust programmer in you will like TDD here)
-TEST_CASE("Figures calculate perimeter correctly") {
-    SECTION("Circle Perimeter") {
+
+TEST_CASE("Circle Logic") {
+    SECTION("Valid Construction and Perimeter") {
         circle c(10.0);
-        // Use Margin for floating point comparisons
-        REQUIRE_THAT(c.perimeter(), Catch::Matchers::WithinRel(62.83185, 0.001));
+        REQUIRE_THAT(c.perimeter(), Catch::Matchers::WithinRel(62.83185, 0.0001));
+        REQUIRE(c.to_string().find("Circle") != std::string::npos);
     }
 
-    SECTION("Rectangle Perimeter") {
-        rectangle r(10, 20);
-        REQUIRE(r.perimeter() == 60.0);
-    }
-
-    SECTION("Triangle Perimeter") {
-        triangle t(3, 4, 5);
-        REQUIRE(t.perimeter() == 12.0);
+    SECTION("Invalid Construction (Negative Radius)") {
+        REQUIRE_THROWS_AS(circle(-1.0), std::invalid_argument);
+        REQUIRE_THROWS_AS(circle(0.0), std::invalid_argument); // Assuming 0 is invalid
     }
 }
 
-// Test 2: Exception Safety (Verifying your validation logic)
-TEST_CASE("Invalid figures throw exceptions", "[validation]") {
-    SECTION("Negative Circle Radius") {
-        REQUIRE_THROWS_AS(circle(-5), std::invalid_argument);
+TEST_CASE("Rectangle Logic") {
+    SECTION("Valid Construction and Perimeter") {
+        rectangle r(10.0, 20.0);
+        REQUIRE_THAT(r.perimeter(), Catch::Matchers::WithinRel(60.0, 0.0001));
+        REQUIRE(r.to_string().find("Rectangle") != std::string::npos);
     }
 
-    SECTION("Impossible Triangle (Triangle Inequality)") {
-        // 1 + 2 is not > 10
+    SECTION("Invalid Construction") {
+        REQUIRE_THROWS_AS(rectangle(-10, 20), std::invalid_argument);
+        REQUIRE_THROWS_AS(rectangle(10, -20), std::invalid_argument);
+        REQUIRE_THROWS_AS(rectangle(0, 20), std::invalid_argument);
+    }
+}
+
+TEST_CASE("Triangle Logic") {
+    SECTION("Valid Construction") {
+        triangle t(3.0, 4.0, 5.0);
+        REQUIRE_THAT(t.perimeter(), Catch::Matchers::WithinRel(12.0, 0.0001));
+    }
+
+    SECTION("Triangle Inequality") {
         REQUIRE_THROWS_AS(triangle(1, 2, 10), std::invalid_argument);
+        REQUIRE_THROWS_AS(triangle(10, 1, 2), std::invalid_argument);
+        REQUIRE_THROWS_AS(triangle(1, 10, 2), std::invalid_argument);
+    }
+
+    SECTION("Negative Sides") {
+        REQUIRE_THROWS_AS(triangle(-3, 4, 5), std::invalid_argument);
     }
 }
 
-// Test 3: Factory/Parsing Logic
-TEST_CASE("String conversion factory works", "[factory]") {
-    string_to_figure factory;
 
-    SECTION("Valid Input") {
-        auto fig = factory.create_from("Circle 5");
-        REQUIRE(fig != nullptr);
-        REQUIRE_THAT(fig->perimeter(), Catch::Matchers::WithinRel(31.4159, 0.001));
+TEST_CASE("String Parsing Logic") {
+    string_to_figure parser;
+
+    SECTION("Valid Strings") {
+        auto c = parser.create_from("Circle 5");
+        REQUIRE(c != nullptr);
+        REQUIRE_THAT(c->perimeter(), Catch::Matchers::WithinRel(31.4159, 0.001));
+
+        auto r = parser.create_from("Rectangle 2 3");
+        REQUIRE(r != nullptr);
+        REQUIRE_THAT(r->perimeter(), Catch::Matchers::WithinRel(10.0, 0.001));
     }
 
-    SECTION("Invalid Name Returns Nullptr") {
-        auto fig = factory.create_from("Hexagon 10");
+    SECTION("Unknown Figures") {
+        auto fig = parser.create_from("Hexagon 10");
         REQUIRE(fig == nullptr);
     }
 
-    SECTION("Case Sensitivity Check (Based on your current code)") {
-        // This highlights the bug I mentioned earlier if you haven't fixed it yet
-        auto fig = factory.create_from("circle 5");
-        // If your code is strict "Circle", this returns null.
-        // If you fixed it to be case-insensitive, this should be valid.
-        // For now, assuming strict:
-        CHECK(fig == nullptr);
+    SECTION("Empty Strings") {
+        auto fig = parser.create_from("");
+        REQUIRE(fig == nullptr);
+    }
+
+    SECTION("Invalid Params") {
+        REQUIRE_THROWS_AS(parser.create_from("Circle -5"), std::invalid_argument);
     }
 }
+
+
+TEST_CASE("StreamFigureFactory Logic", "[Factory][Stream]") {
+    auto file_content = std::make_unique<std::stringstream>();
+    *file_content << "Circle 10\n"<< "Rectangle 5 5\n" << "Triangle 3 4 5";
+
+
+    StreamFigureFactory factory(std::move(file_content));
+
+    SECTION("Reads figures sequentially") {
+        auto fig1 = factory.create();
+        REQUIRE(fig1 != nullptr);
+        REQUIRE_THAT(fig1->perimeter(), Catch::Matchers::WithinRel(62.8318, 0.001));
+
+        auto fig2 = factory.create();
+        REQUIRE(fig2 != nullptr);
+        REQUIRE_THAT(fig2->perimeter(), Catch::Matchers::WithinRel(20.0, 0.001));
+
+        auto fig3 = factory.create();
+        REQUIRE(fig3 != nullptr);
+        REQUIRE_THAT(fig3->perimeter(), Catch::Matchers::WithinRel(12.0, 0.001));
+    }
+
+    SECTION("Returns null at End of Stream") {
+        factory.create();
+        factory.create();
+        factory.create();
+        auto fig4 = factory.create();
+        REQUIRE(fig4 == nullptr);
+    }
+}
+
