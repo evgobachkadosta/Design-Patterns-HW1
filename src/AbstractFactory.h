@@ -28,7 +28,7 @@ public:
             std::cout << "Please enter the filename: " << std::endl;
 
             std::cin >> filename;
-            std::unique_ptr<std::ifstream> ifs = make_unique<std::ifstream>(filename);
+            std::unique_ptr<std::ifstream> ifs = std::make_unique<std::ifstream>(filename);
             if (!ifs->is_open()) {
                 throw std::invalid_argument("Cannot open file: " + filename);
             }
