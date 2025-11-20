@@ -39,11 +39,12 @@ public:
 
 class StreamFigureFactory : public figure_factory {
 private:
+    std::unique_ptr<std::istream> owned_stream;
     std::istream& input;
     string_to_figure converter;
 public:
     StreamFigureFactory(std::istream& input) : input(input) {}
-    StreamFigureFactory(std::unique_ptr<std::istream> is) : input(*is) {}
+    StreamFigureFactory(std::unique_ptr<std::istream> is) :owned_stream(std::move(is)), input(*is) {}
 
     std::unique_ptr<figure> create() override {
         std::string representation;

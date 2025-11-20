@@ -16,14 +16,17 @@ public:
         double a, b, c;
         iss >> type;
         if (type == "Circle") {
-            iss >> a;
-            return std::make_unique<circle>(a);
-        } else if (type == "Rectangle") {
-            iss >> a >> b;
-            return std::make_unique<rectangle>(a, b);
+            if (iss >> a) {
+                return std::make_unique<circle>(a);
+            }
+        }else if (type == "Rectangle") {
+            if (iss >> a >> b){
+                return std::make_unique<rectangle>(a, b);
+            }
         } else if (type == "Triangle") {
-            iss >> a >> b >> c;
-            return std::make_unique<triangle>(a, b, c);
+            if (iss >> a >> b >> c) {
+                return std::make_unique<triangle>(a, b, c);
+            }
         }
         return nullptr;
     };
