@@ -16,7 +16,7 @@ TEST_CASE("Circle Logic") {
         REQUIRE(c.to_string().find("Circle") != std::string::npos);
     }
 
-    SECTION("Invalid Construction (Negative Radius)") {
+    SECTION("Negative radius") {
         REQUIRE_THROWS_AS(circle(-1.0), std::invalid_argument);
         REQUIRE_THROWS_AS(circle(0.0), std::invalid_argument); // Assuming 0 is invalid
     }
@@ -37,7 +37,7 @@ TEST_CASE("Rectangle Logic") {
 }
 
 TEST_CASE("Triangle Logic") {
-    SECTION("Valid Construction") {
+    SECTION("Valid Construction and Perimetr") {
         triangle t(3.0, 4.0, 5.0);
         REQUIRE_THAT(t.perimeter(), Catch::Matchers::WithinRel(12.0, 0.0001));
     }
