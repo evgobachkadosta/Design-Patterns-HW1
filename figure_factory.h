@@ -44,7 +44,7 @@ private:
     string_to_figure converter;
 public:
     StreamFigureFactory(std::istream& input) : input(input) {}
-    StreamFigureFactory(std::unique_ptr<std::istream> is) :owned_stream(std::move(is)), input(*is) {}
+    StreamFigureFactory(std::unique_ptr<std::istream> is) :owned_stream(std::move(is)), input(*owned_stream) {}
 
     std::unique_ptr<figure> create() override {
         std::string representation;
