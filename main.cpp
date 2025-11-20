@@ -44,7 +44,20 @@ int main() {
         std::cin.ignore();
         std::vector<std::unique_ptr<figure>> figures;
         for (int i = 0; i < n; ++i) {
-            figures.push_back(ff->create());
+            try {
+                std::unique_ptr<figure> fig = ff->create();
+
+                if (fig) {
+                    figures.push_back(std::move(fig));
+                } else {
+                    std::cerr << "Error: Invalid input format or empty line. Skipping." << std::endl;
+                    i--;
+                }
+            }
+            catch (const std::invalid_argument& e) {
+                std::cerr << "Error creating figure: " << e.what() << ". Skipping." << std::endl;
+            }
+
         }
         std::cout << "Choose where to print the figures [STDOUT/File] :" << "\n";
         std::string output_type;
